@@ -34,7 +34,7 @@
 - [x] 사업계획서 v1.1 — 경쟁 분석·가격 벤치마크·B2B 규제 반영
 - [ ] 기술 검증 스파이크 — MediaPipe 손동작 + 아동 발화 인식 데모 (데모 제작 완료: [spike/index.html](spike/index.html) — `python -m http.server 4173 --directory spike` 후 Chrome에서 http://localhost:4173 · 아동 실측 남음)
 - [x] MVP 테마팩 1호 "과일 농장" — 3가지 시나리오(따기·씻기·바구니 담기) 구현: [mvp/](mvp/) — `python -m http.server 4174 --directory mvp` 후 Chrome에서 http://localhost:4174 (`?debug=1`로 디버그 모드)
-- [x] 몰입 강화 — ① **아이 얼굴에 토끼 코스튬 실시간 합성**(MediaPipe FaceLandmarker, 아이=주인공) ② **무대 위 반응형 캐릭터 Bunny**(따라보기·응원·걱정 표정+홉 애니메이션) ③ **아이 이름 개인화**·행동 반응형 코치 문구. 전부 클라이언트 사이드(영상 미저장·미전송)
+- [x] 몰입 강화 — ① **시작 시 얼굴 1회 촬영 → 주인공 캐릭터에 입히기**(MediaPipe FaceLandmarker로 얼굴 크롭·타원 마스크, 아이 얼굴이 무대 위 토끼 주인공이 됨) ② **무대 위 반응형 캐릭터**(따라보기·응원·걱정 표정+홉 애니메이션) ③ **아이 이름 개인화**·행동 반응형 코치 문구. 전부 클라이언트 사이드(영상 미저장·미전송, 얼굴 스냅샷도 메모리에만 유지)
 - [ ] MVP 아동 실측 및 베타 준비
 
 ## 90일 로드맵 요약
