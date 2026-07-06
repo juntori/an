@@ -1,0 +1,533 @@
+<title>몸으로 배우는 영어 — 90일 실행 계획 보고서</title>
+<style>
+  :root{
+    --paper:#F9FAF5;
+    --ink:#22271F;
+    --muted:#68705E;
+    --leaf:#3D7A46;
+    --leaf-soft:#EAF1E6;
+    --apple:#D9482B;
+    --apple-soft:#FBEAE4;
+    --line:#E1E4D6;
+    --card:#FFFFFF;
+    --hl:#F5D9C9;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#181B15;
+      --ink:#E8EADF;
+      --muted:#9AA28C;
+      --leaf:#7CB786;
+      --leaf-soft:#243024;
+      --apple:#E8735A;
+      --apple-soft:#3A241E;
+      --line:#333A2C;
+      --card:#20241B;
+      --hl:#5A3A2A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#181B15;
+    --ink:#E8EADF;
+    --muted:#9AA28C;
+    --leaf:#7CB786;
+    --leaf-soft:#243024;
+    --apple:#E8735A;
+    --apple-soft:#3A241E;
+    --line:#333A2C;
+    --card:#20241B;
+    --hl:#5A3A2A;
+  }
+  :root[data-theme="light"]{
+    --paper:#F9FAF5;
+    --ink:#22271F;
+    --muted:#68705E;
+    --leaf:#3D7A46;
+    --leaf-soft:#EAF1E6;
+    --apple:#D9482B;
+    --apple-soft:#FBEAE4;
+    --line:#E1E4D6;
+    --card:#FFFFFF;
+    --hl:#F5D9C9;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Pretendard Variable',Pretendard,'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    font-size:16px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 24px 96px}
+
+  /* ---------- header ---------- */
+  header.doc{padding:64px 0 40px;border-bottom:3px solid var(--ink)}
+  .doc-kind{
+    display:flex;align-items:center;gap:10px;
+    font-size:12px;font-weight:700;letter-spacing:.14em;
+    color:var(--leaf);text-transform:uppercase;margin-bottom:20px;
+  }
+  .doc-kind .dot{width:8px;height:8px;border-radius:50%;background:var(--apple)}
+  h1{
+    font-size:clamp(30px,6vw,44px);line-height:1.25;font-weight:800;
+    letter-spacing:-.02em;margin:0 0 14px;text-wrap:balance;
+  }
+  h1 .accent{color:var(--apple)}
+  .doc-sub{font-size:17px;color:var(--muted);max-width:38em;margin:0 0 28px}
+  .doc-meta{display:flex;flex-wrap:wrap;gap:8px 28px;font-size:13px;color:var(--muted)}
+  .doc-meta b{color:var(--ink);font-weight:600}
+
+  /* ---------- section scaffold ---------- */
+  section{padding:52px 0 8px}
+  .eyebrow{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
+  .eyebrow .num{font-size:13px;font-weight:800;color:var(--apple);letter-spacing:.08em;font-variant-numeric:tabular-nums}
+  .eyebrow .label{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--leaf);text-transform:uppercase}
+  h2{font-size:26px;font-weight:800;letter-spacing:-.01em;margin:0 0 18px;text-wrap:balance}
+  h3{font-size:17px;font-weight:700;margin:30px 0 10px}
+  p{margin:0 0 16px;max-width:46em}
+  ul{margin:0 0 16px;padding-left:22px}
+  li{margin-bottom:7px}
+  strong{font-weight:700}
+  .hl{background:linear-gradient(transparent 62%, var(--hl) 62%);font-weight:700}
+
+  /* ---------- gate cards ---------- */
+  .gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:26px 0 10px}
+  .gate{
+    background:var(--card);border:1px solid var(--line);border-top:4px solid var(--leaf);
+    border-radius:10px;padding:18px 16px 14px;
+  }
+  .gate.final{border-top-color:var(--apple)}
+  .gate .g-when{font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--apple);text-transform:uppercase;font-variant-numeric:tabular-nums}
+  .gate .g-name{font-size:16px;font-weight:800;margin:6px 0 8px;line-height:1.4}
+  .gate .g-q{font-size:13.5px;color:var(--muted);line-height:1.6}
+
+  /* ---------- gantt ---------- */
+  .gantt-scroll{overflow-x:auto;margin:22px 0;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+  .gantt{min-width:720px;padding:18px 16px 14px}
+  .g-weeks{
+    display:grid;grid-template-columns:130px repeat(13,1fr);gap:3px;
+    font-size:10.5px;font-weight:700;color:var(--muted);
+    font-variant-numeric:tabular-nums;margin-bottom:8px;
+  }
+  .g-weeks span{text-align:center}
+  .g-row{display:grid;grid-template-columns:130px repeat(13,1fr);gap:3px;align-items:center;margin-bottom:7px}
+  .g-row .g-label{font-size:12.5px;font-weight:700;padding-right:10px;line-height:1.35}
+  .g-row .cell{height:20px;border-radius:4px;background:var(--leaf-soft)}
+  .g-row .cell.on{background:var(--leaf)}
+  .g-row .cell.hot{background:var(--apple)}
+  .g-legend{display:flex;gap:18px;font-size:12px;color:var(--muted);padding:8px 4px 2px;border-top:1px solid var(--line);margin-top:10px}
+  .g-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .g-legend .i-on{background:var(--leaf)}
+  .g-legend .i-hot{background:var(--apple)}
+  .g-legend .i-off{background:var(--leaf-soft)}
+
+  /* ---------- tables ---------- */
+  .tbl-scroll{overflow-x:auto;margin:20px 0}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px;background:var(--card)}
+  th,td{text-align:left;padding:11px 14px;vertical-align:top;border-bottom:1px solid var(--line);line-height:1.55}
+  th{font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--muted);background:var(--leaf-soft);white-space:nowrap}
+  td b{font-weight:700}
+  td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.wk{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:800;color:var(--apple);font-size:13px}
+  .done-chip{
+    display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;
+    color:var(--leaf);border:1.5px solid var(--leaf);border-radius:999px;
+    padding:1px 9px;text-transform:uppercase;white-space:nowrap;
+  }
+
+  /* ---------- phase blocks ---------- */
+  .phase{border-left:3px solid var(--leaf);padding:2px 0 8px 20px;margin:0 0 34px}
+  .phase .ph-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:8px}
+  .phase .ph-name{font-weight:800;font-size:17.5px}
+  .phase .ph-week{font-size:12px;font-weight:700;color:var(--apple);letter-spacing:.08em;font-variant-numeric:tabular-nums}
+  .phase .ph-focus{font-size:13px;color:var(--muted)}
+  .phase .goal{
+    font-size:13.5px;color:var(--leaf);font-weight:700;margin-top:10px;
+    background:var(--leaf-soft);border-radius:8px;padding:10px 14px;display:inline-block;
+  }
+
+  /* ---------- callouts ---------- */
+  .note{
+    background:var(--card);border:1px solid var(--line);border-left:4px solid var(--apple);
+    border-radius:8px;padding:16px 18px;margin:20px 0;font-size:14.5px;
+  }
+  .note b{color:var(--apple)}
+  .rule{
+    background:var(--leaf-soft);border:1.5px dashed var(--leaf);
+    border-radius:10px;padding:18px 22px;margin:20px 0;font-size:14.5px;
+  }
+  .rule .tag{
+    display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.1em;
+    color:#fff;background:var(--leaf);border-radius:999px;padding:3px 12px;
+    margin-bottom:10px;text-transform:uppercase;
+  }
+  :root[data-theme="dark"] .rule .tag{color:#181B15}
+  @media (prefers-color-scheme: dark){ .rule .tag{color:#181B15} }
+  :root[data-theme="light"] .rule .tag{color:#fff}
+
+  /* ---------- decision fork ---------- */
+  .fork{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:20px 0}
+  .fork .branch{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .fork .branch .b-if{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+  .fork .branch.go .b-if{color:var(--leaf)}
+  .fork .branch.pivot .b-if{color:var(--apple)}
+  .fork .branch .b-body{font-size:14px;line-height:1.65}
+
+  /* ---------- weekly rhythm ---------- */
+  .rhythm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:22px 0}
+  .rhythm .slot{background:var(--leaf-soft);border-radius:10px;padding:14px}
+  .rhythm .slot .d{font-size:11.5px;font-weight:800;letter-spacing:.1em;color:var(--apple);text-transform:uppercase;margin-bottom:6px}
+  .rhythm .slot .t{font-weight:700;font-size:14px;margin-bottom:4px}
+  .rhythm .slot .s{font-size:12.5px;color:var(--muted);line-height:1.55}
+
+  .src{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);margin-top:14px;padding-top:10px;max-width:none}
+
+  footer{
+    margin-top:64px;padding-top:24px;border-top:3px solid var(--ink);
+    font-size:13px;color:var(--muted);
+    display:flex;flex-wrap:wrap;gap:6px 24px;justify-content:space-between;
+  }
+  @media (max-width:560px){header.doc{padding-top:44px}section{padding-top:40px}}
+</style>
+
+<div class="wrap">
+
+<header class="doc">
+  <div class="doc-kind"><span class="dot"></span>실행 계획 보고서 · Execution Plan v1.0</div>
+  <h1>90일 실행 계획<span class="accent">.</span><br>주 단위 태스크와 관문 판정 기준</h1>
+  <p class="doc-sub">사업계획서 v1.1의 90일 론칭 플랜을 주차 단위로 세분화한 실행 문서다.
+  각 태스크에 산출물과 완료 기준을 달고, 3개 관문(G1~G3)의 정량 판정 기준과 미달 시 대응 분기를 명시한다.
+  1인 전업 창업 기준 — 모든 태스크의 담당자는 창업자 본인이다.</p>
+  <div class="doc-meta">
+    <span>작성일 <b>2026년 7월 6일</b></span>
+    <span>기준 문서 <b>사업계획서 v1.1</b></span>
+    <span>기간 <b>13주 (Week 1–13)</b></span>
+    <span>체제 <b>1인 전업 · 무자본</b></span>
+  </div>
+</header>
+
+<!-- ================= 00 개요 ================= -->
+<section>
+  <div class="eyebrow"><span class="num">00</span><span class="label">Overview</span></div>
+  <h2>실행 구조 — 3개 관문이 계획을 지배한다</h2>
+  <p>이 계획은 일정표가 아니라 <strong>검증 시퀀스</strong>다. 90일 안에 확인해야 할 질문은 세 개이고,
+  각 질문에 관문(Gate)을 세워 <span class="hl">관문을 통과하지 못하면 다음 단계로 넘어가지 않는다</span>.
+  일정이 밀리는 것보다 검증 없이 진도가 나가는 것이 더 위험하다는 원칙이다.</p>
+  <div class="gates">
+    <div class="gate">
+      <div class="g-when">G1 · Week 2 말</div>
+      <div class="g-name">기술이 성립하는가</div>
+      <div class="g-q">손동작·아동 발화 인식률이 게임으로 성립하는 수준인가 — 최대 기술 리스크의 조기 판정</div>
+    </div>
+    <div class="gate">
+      <div class="g-when">G2 · Week 8 말</div>
+      <div class="g-name">아이가 다시 찾는가</div>
+      <div class="g-q">베타 가정에서 아이가 스스로 재플레이를 요구하는가 — 제품·시장 적합성의 첫 신호</div>
+    </div>
+    <div class="gate final">
+      <div class="g-when">G3 · Week 13</div>
+      <div class="g-name">지갑이 열리는가</div>
+      <div class="g-q">유료 구독 30명+ 또는 B2B 파일럿 1곳 계약 — 확장 투자 여부의 최종 판정</div>
+    </div>
+  </div>
+  <h3>크리티컬 패스</h3>
+  <p>기술 스파이크(W1–2) → 게임 엔진·콘텐츠(W3–6) → 베타 운영(W7–8) → 결제·유료 전환(W9–11) → 90일 판정(W13).
+  이 사슬 위의 태스크가 밀리면 전체가 밀린다. 마케팅·행정·B2B는 크리티컬 패스와 병렬로 진행되며,
+  밀리더라도 판정일을 미루지 않는다.</p>
+  <div class="note"><b>이미 완료된 선행 작업</b> — 1·2차 딥리서치(시장·경쟁), 사업계획서 v1.1, 컨셉·가격 가설·B2B 채널 전략 확정.
+  이 보고서는 그 지점부터 시작한다.</div>
+</section>
+
+<!-- ================= 01 워크스트림 ================= -->
+<section>
+  <div class="eyebrow"><span class="num">01</span><span class="label">Workstreams</span></div>
+  <h2>워크스트림 맵 — 5개 흐름 × 13주</h2>
+  <p>1인 체제이므로 워크스트림은 역할 분담이 아니라 <strong>시간 배분의 단위</strong>다.
+  붉은 칸은 그 주의 크리티컬 패스 — 다른 모든 일보다 우선한다.</p>
+
+  <div class="gantt-scroll"><div class="gantt">
+    <div class="g-weeks">
+      <span></span><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span><span>W9</span><span>W10</span><span>W11</span><span>W12</span><span>W13</span>
+    </div>
+    <div class="g-row"><span class="g-label">기술·개발</span>
+      <span class="cell hot"></span><span class="cell hot"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell hot"></span><span class="cell on"></span><span class="cell on"></span><span class="cell"></span><span class="cell"></span>
+    </div>
+    <div class="g-row"><span class="g-label">콘텐츠 제작</span>
+      <span class="cell"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell hot"></span><span class="cell hot"></span><span class="cell on"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span>
+    </div>
+    <div class="g-row"><span class="g-label">마케팅·커뮤니티</span>
+      <span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell hot"></span><span class="cell hot"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span>
+    </div>
+    <div class="g-row"><span class="g-label">행정·법무</span>
+      <span class="cell on"></span><span class="cell on"></span><span class="cell"></span><span class="cell"></span><span class="cell on"></span><span class="cell on"></span><span class="cell"></span><span class="cell"></span><span class="cell on"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span>
+    </div>
+    <div class="g-row"><span class="g-label">B2B 영업</span>
+      <span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell on"></span><span class="cell"></span><span class="cell on"></span><span class="cell hot"></span><span class="cell hot"></span><span class="cell on"></span>
+    </div>
+    <div class="g-legend">
+      <span><i class="i-hot"></i>크리티컬 패스</span>
+      <span><i class="i-on"></i>진행</span>
+      <span><i class="i-off"></i>휴지</span>
+    </div>
+  </div></div>
+
+  <h3>페이즈별 시간 배분 가이드 (주 50시간 기준)</h3>
+  <div class="tbl-scroll"><table>
+    <tr><th>페이즈</th><th>기술·개발</th><th>콘텐츠</th><th>마케팅</th><th>행정·B2B</th></tr>
+    <tr><td><b>P1</b> W1–4 기반·검증</td><td class="num">55%</td><td class="num">20%</td><td class="num">15%</td><td class="num">10%</td></tr>
+    <tr><td><b>P2</b> W5–8 MVP·베타</td><td class="num">40%</td><td class="num">30%</td><td class="num">25%</td><td class="num">5%</td></tr>
+    <tr><td><b>P3</b> W9–13 유료화·B2B</td><td class="num">25%</td><td class="num">25%</td><td class="num">25%</td><td class="num">25%</td></tr>
+  </table></div>
+  <div class="rule"><span class="tag">운영 원칙</span>
+  마케팅(인스타 주 3회 발행)은 W1부터 13주 내내 멈추지 않는다. 리서치 결론대로 <strong>SNS 채널 선구축이 콘텐츠 사업 성패를 가른다</strong> —
+  제작 과정 공개 콘텐츠가 곧 베타 대기자 모집 파이프라인이다. 개발이 바빠도 이 리듬만은 사수한다.</div>
+</section>
+
+<!-- ================= 02 Phase 1 ================= -->
+<section>
+  <div class="eyebrow"><span class="num">02</span><span class="label">Phase 1 · Week 1–4</span></div>
+  <h2>기반과 기술 검증 — 최대 리스크를 가장 먼저</h2>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 1</span><span class="ph-name">기술 스파이크 착수 + 법적 기반</span><span class="ph-focus">모든 것보다 인식률 검증이 먼저</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>사업자등록 (간이과세)</b> — 홈택스 온라인 신청, 업태: 정보통신업/교육서비스</td><td>사업자등록증</td><td>등록번호 발급</td></tr>
+      <tr><td><b>통신판매업 신고</b> — 정부24, 구매안전서비스 확인증(결제대행사 가입 시 발급) 필요 여부 확인</td><td>신고증 (또는 결제 연동 시점으로 이월 판단)</td><td>신고 완료 또는 W9 결제 연동과 묶어 처리하기로 확정</td></tr>
+      <tr><td><b>MediaPipe Hands 스파이크</b> — 브라우저에서 손 뻗기·쥐기(pinch/grab) 제스처 인식 데모. 조명·거리·각도 변화 테스트</td><td>동작 인식 데모 페이지</td><td>일반 실내 조명, 노트북 웹캠 기준 제스처 인식 성공률 측정치 확보</td></tr>
+      <tr><td><b>Web Speech API 스파이크</b> — 목표 단어 10개 프롬프트형(따라 말하기) 인식 테스트. 관대한 유사 매칭 로직 초안</td><td>발화 인식 데모 + 매칭 로직</td><td>성인 발화 기준 동작 확인, 아동 테스트 준비 완료</td></tr>
+      <tr><td><b>인스타그램 개설</b> — 계정·프로필·첫 게시물 3개 (창업 선언, 컨셉 소개, 제작 과정)</td><td>채널 + 콘텐츠 캘린더</td><td>주 3회 발행 리듬 시작</td></tr>
+    </table></div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 2</span><span class="ph-name">아동 실측 → G1 판정</span><span class="ph-focus">숫자로 판정하고, 숫자로 설계를 고친다</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>아동 실측 테스트</b> — 지인·커뮤니티로 4~9세 아동 3~5명 섭외, 데모 플레이 관찰 (보호자 동의 서면 확보)</td><td>인식률 측정 시트 + 관찰 노트</td><td>아동별 손동작·발화 인식 성공/실패 전 시도 기록</td></tr>
+      <tr><td><b>G1 관문 판정</b> — 아래 05 기준표로 통과/조건부/미달 판정</td><td>판정 기록 + 설계 수정안</td><td>판정 완료, 미달 항목은 대응 분기 적용</td></tr>
+      <tr><td><b>테마팩 1호 "과일 농장" 기획</b> — 목표 단어 10개 확정(과일 명사 + pick/wash 동사), 단어별 손동작 매핑 정의</td><td>단어–동작 매핑표</td><td>10개 단어 전부 W1 스파이크에서 검증된 제스처로 매핑</td></tr>
+      <tr><td><b>스토리보드</b> — 8~10장면, 미션 루프(상황→동작→발화→보상) 구조로 장면별 대본</td><td>스토리보드 문서</td><td>회당 플레이 10~15분 분량 확정</td></tr>
+    </table></div>
+    <div class="goal">G1 관문: 손동작 인식 ≥ 90% · 프롬프트형 아동 발화 인식 ≥ 70% (관대 매칭 적용 후) — 상세 기준은 05</div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 3</span><span class="ph-name">게임 엔진 뼈대</span><span class="ph-focus">테마팩을 갈아끼울 수 있는 구조로</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>미션 루프 상태머신</b> — 상황 제시→동작 대기→발화 대기→보상→다음 장면. 인식 실패 시 격려 후 진행하는 '실패 없는 루프' 포함</td><td>게임 코어 모듈</td><td>더미 콘텐츠로 루프 1회전 완주</td></tr>
+      <tr><td><b>테마팩 데이터 구조</b> — 단어·동작·에셋·대본을 JSON으로 분리, 엔진과 콘텐츠 독립</td><td>테마팩 스키마</td><td>2호 팩을 코드 수정 없이 추가 가능한 구조 확인</td></tr>
+      <tr><td><b>온보딩 플로우</b> — 카메라·마이크 권한, 30초 세팅 가이드(거리·조명 체크 화면)</td><td>온보딩 화면</td><td>처음 접속한 성인이 도움 없이 1분 내 플레이 시작</td></tr>
+      <tr><td><b>AI 에셋 파이프라인 구축</b> — 일러스트(캐릭터·배경) 스타일 확정, TTS 음성 톤 선정, 생성→후처리 워크플로 정리</td><td>스타일 가이드 + 샘플 에셋</td><td>장면 1개 분량 에셋을 반나절 내 생산 가능</td></tr>
+    </table></div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 4</span><span class="ph-name">수직 슬라이스 + 베타 대기 파이프라인</span><span class="ph-focus">장면 하나를 끝까지 — 전체 품질의 기준점</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>수직 슬라이스</b> — "사과 따기" 장면 1개를 최종 품질로 완성 (일러스트·음성·연출·보상까지)</td><td>플레이 가능한 장면 1개</td><td>내부 테스트 아동 1명이 도움 없이 완주 + 웃음/재요청 반응 관찰</td></tr>
+      <tr><td><b>베타 대기자 랜딩페이지</b> — 컨셉 소개 + 수직 슬라이스 영상 + 대기 신청 폼</td><td>랜딩페이지</td><td>정적 호스팅 배포, 인스타 프로필 연결</td></tr>
+      <tr><td><b>P1 회고</b> — 일정·품질·인식률 데이터 점검, P2 계획 조정</td><td>회고 노트</td><td>P2 주차별 계획 확정</td></tr>
+    </table></div>
+    <div class="goal">P1 종료 기준: G1 통과 + 수직 슬라이스 1개 + 베타 대기자 모집 시작</div>
+  </div>
+</section>
+
+<!-- ================= 03 Phase 2 ================= -->
+<section>
+  <div class="eyebrow"><span class="num">03</span><span class="label">Phase 2 · Week 5–8</span></div>
+  <h2>MVP 완성과 베타 — 재플레이율이 전부다</h2>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 5–6</span><span class="ph-name">테마팩 1호 콘텐츠 완성</span><span class="ph-focus">수직 슬라이스 품질로 나머지 장면 양산</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>잔여 7~9장면 제작</b> — W3 파이프라인으로 일러스트·음성·연출 양산. 주당 4~5장면 페이스</td><td>테마팩 1호 전체 장면</td><td>10~15분 플레이 완주 가능</td></tr>
+      <tr><td><b>스티커 보상 시스템</b> — 장면 완료 보상, 팩 완주 컬렉션</td><td>보상 UI</td><td>보상 획득이 재플레이 동기로 작동하는 구조</td></tr>
+      <tr><td><b>학부모 리포트 v1</b> — 세션 종료 후 플레이 단어·발화 횟수 요약 화면</td><td>리포트 화면</td><td>세션 데이터가 로컬에서 집계·표시</td></tr>
+      <tr><td><b>법정대리인 동의 플로우</b> — 부모 계정(아이는 닉네임), 만 14세 미만 동의 절차, 개인정보처리방침 작성</td><td>동의 플로우 + 방침 문서</td><td>"카메라·마이크 데이터 미저장·미전송"을 방침에 명문화</td></tr>
+      <tr><td><b>기기 호환 테스트</b> — 노트북(Windows/Mac)·태블릿 주요 브라우저 매트릭스</td><td>호환성 체크 시트</td><td>주력 2개 환경에서 이슈 0, 나머지는 알려진 제약으로 문서화</td></tr>
+    </table></div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 7</span><span class="ph-name">베타 모집과 오픈</span><span class="ph-focus">20~30가정 — 숫자보다 관찰 가능한 가정</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>베타 모집</b> — 인스타 대기자 우선 + 맘카페 체험단 공고 2~3곳. 조건: 2주간 주 3회 플레이 + 설문 + (동의 시) 플레이 영상 제공</td><td>베타 가정 명단</td><td>20가정 이상 확정 (30가정 목표)</td></tr>
+      <tr><td><b>베타 킷 발송</b> — 접속 안내, 세팅 가이드, 1주차 미션, 카톡 오픈채팅 개설</td><td>베타 온보딩 킷</td><td>첫 주 내 전 가정 1회 이상 접속</td></tr>
+      <tr><td><b>측정 체계</b> — 세션 수·완주율·재방문을 개인정보 없이 집계하는 최소 로깅(영상·음성 제외 이벤트만)</td><td>지표 대시보드(시트 수준)</td><td>재플레이율을 주 단위로 산출 가능</td></tr>
+    </table></div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 8</span><span class="ph-name">베타 운영 → G2 판정</span><span class="ph-focus">영상과 인터뷰 — 전환 자산이자 검증 데이터</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>플레이 영상 확보</b> — 동의 가정 대상, 아이가 실제 플레이하는 영상. 마케팅·B2B 시연 겸용</td><td>영상 5개 이상</td><td>SNS 게시 동의 확보분 3개 이상</td></tr>
+      <tr><td><b>학부모 인터뷰 10가정</b> — "움직이는 스크린타임" 가설 검증(리서치 미검증 항목), 지불 의사(14,900 vs 19,900원) 질문 포함</td><td>인터뷰 노트</td><td>가격 수용선·구매 결정 요인 정리</td></tr>
+      <tr><td><b>버그·UX 핫픽스</b> — 오픈채팅 피드백 즉시 반영, 세팅 이탈 구간 개선</td><td>수정 배포</td><td>세팅 단계 이탈률 개선 확인</td></tr>
+      <tr><td><b>G2 관문 판정</b> — 재플레이율·완주율·인터뷰 종합</td><td>판정 기록</td><td>05 기준표로 판정 완료</td></tr>
+    </table></div>
+    <div class="goal">G2 관문: 주 2회+ 자발 재플레이 가정 ≥ 50% · 팩 완주율 ≥ 60% · "아이가 먼저 하자고 한다" 응답 다수 — 상세 기준은 05</div>
+  </div>
+</section>
+
+<!-- ================= 04 Phase 3 ================= -->
+<section>
+  <div class="eyebrow"><span class="num">04</span><span class="label">Phase 3 · Week 9–13</span></div>
+  <h2>유료 전환과 B2B 시동 — 첫 번째 사업 성적표</h2>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 9</span><span class="ph-name">결제 인프라</span><span class="ph-focus">크리티컬 패스 복귀 — 결제가 열려야 판정이 가능하다</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>결제 연동</b> — PG(토스페이먼츠 등) 가입·심사, 월 구독 정기결제 구현. 통신판매업 신고 미완이면 이 시점 완료</td><td>구독 결제 시스템</td><td>테스트 결제→해지 전 과정 통과</td></tr>
+      <tr><td><b>요금제 화면</b> — 무료 1팩 체험 + 월 구독. 가격 A/B(14,900 vs 19,900원) 세팅 — 인터뷰 결과로 초기값 결정</td><td>요금제 페이지</td><td>A/B 분기 동작 확인</td></tr>
+      <tr><td><b>환불·해지 정책</b> — 전자상거래법 기준 청약철회 반영 약관</td><td>이용약관</td><td>결제 화면에 고지</td></tr>
+    </table></div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 10–11</span><span class="ph-name">유료 오픈 + 전환 캠페인 + B2B 시연</span><span class="ph-focus">베타 전환율이 첫 성적표</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>유료 오픈</b> — 얼리버드 첫 100명 할인, 베타 가정 전용 오퍼(추가 할인 또는 굿즈 예약권)</td><td>공개 론칭</td><td>결제 가능 상태로 공개</td></tr>
+      <tr><td><b>베타 전환 캠페인</b> — 오픈채팅·개별 안내, 전환율 일 단위 추적</td><td>전환율 데이터</td><td>베타 가정 전원에게 오퍼 도달</td></tr>
+      <tr><td><b>플레이 영상 마케팅</b> — 확보 영상으로 인스타 릴스 집중 발행, 랜딩 유입 측정</td><td>릴스 시리즈</td><td>유입→체험→구독 퍼널 수치 확보</td></tr>
+      <tr><td><b>B2B 시연 3곳</b> — 지역 유치원·영어학원 무료 시연 (빔프로젝터+웹캠 교실 세팅, 영상 포트폴리오 지참). 어린이집은 특별활동 파견업체 접촉으로 대체</td><td>시연 3회 + 피드백</td><td>파일럿 제안서(반별 월 5~10만원) 전달 3곳</td></tr>
+    </table></div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 12</span><span class="ph-name">테마팩 2호 착수</span><span class="ph-focus">구독 유지의 조건 — 콘텐츠 소진 전에 다음 팩</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>2호 테마 확정·기획</b> — 후보: 동물원/마트/몸·동작. 베타 아동 선호 데이터로 결정</td><td>단어–동작 매핑 + 스토리보드</td><td>1호와 동일 스키마로 기획 완료</td></tr>
+      <tr><td><b>2호 제작 착수</b> — 검증된 파이프라인으로 장면 생산 시작</td><td>초기 장면 3~4개</td><td>월 1팩 증산 리듬 성립 확인</td></tr>
+      <tr><td><b>B2B 후속 협상</b> — 시연 3곳 후속 미팅, 파일럿 조건 협상</td><td>협상 기록</td><td>1곳 이상 파일럿 조건 합의 단계 진입</td></tr>
+    </table></div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-head"><span class="ph-week">WEEK 13</span><span class="ph-name">90일 판정 (G3)</span><span class="ph-focus">숫자 앞에서 정직하게</span></div>
+    <div class="tbl-scroll"><table>
+      <tr><th>태스크</th><th>산출물</th><th>완료 기준</th></tr>
+      <tr><td><b>지표 총결산</b> — 구독자 수, 전환율, 재플레이율, 해지, CAC(체험단·광고비 대비), B2B 파이프라인</td><td>90일 성과 보고</td><td>G3 판정표 완성</td></tr>
+      <tr><td><b>G3 판정 및 다음 분기 계획</b> — 아래 분기 기준으로 확장/보완/피벗 결정</td><td>Q2 실행 계획</td><td>결정 문서화</td></tr>
+    </table></div>
+  </div>
+
+  <div class="fork">
+    <div class="branch go">
+      <div class="b-if">통과 → 확장</div>
+      <div class="b-body">유료 30명+ 또는 B2B 파일럿 1곳 계약. → 테마팩 월 1팩 증산, 얼리버드 종료 후 가격 밴드(월 23,500~44,000원) 하단으로 단계 인상 검토, B2B 레퍼런스 확보전, 굿즈(맞춤 동화책) 설계 착수.</div>
+    </div>
+    <div class="branch pivot">
+      <div class="b-if">미달 → 진단 후 피벗</div>
+      <div class="b-body">베타 데이터로 병목 지점 진단: 재플레이율은 높은데 전환이 낮으면 가격·오퍼 문제(가격 재설계·B2B 비중 확대), 재플레이율 자체가 낮으면 제품 문제(루프 재설계 또는 한글/문해력 라인 등 컨셉 피벗).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 05 관문 기준 ================= -->
+<section>
+  <div class="eyebrow"><span class="num">05</span><span class="label">Gate Criteria</span></div>
+  <h2>관문 판정 기준 — 정량 기준과 미달 시 분기</h2>
+  <p>판정은 감이 아니라 사전에 적어둔 숫자로 한다. 아래 기준은 베타 실측으로 조정할 수 있으나,
+  <span class="hl">조정은 판정 전에만 허용</span>된다 — 판정일에 기준을 움직이는 것은 금지.</p>
+  <div class="tbl-scroll"><table>
+    <tr><th>관문</th><th>지표</th><th>통과</th><th>조건부 통과</th><th>미달 시 대응</th></tr>
+    <tr>
+      <td rowspan="2"><b>G1</b><br>W2 말<br>기술 성립</td>
+      <td>손동작 인식 성공률<br>(아동 3명+, 실내 일반 조명)</td>
+      <td class="num">≥ 90%</td>
+      <td class="num">80~90%</td>
+      <td>제스처 단순화(쥐기→터치식 뻗기), 판정 영역 확대, 온보딩 세팅 강화 후 1주 재측정</td>
+    </tr>
+    <tr>
+      <td>프롬프트형 발화 인식률<br>(관대 유사 매칭 적용 후)</td>
+      <td class="num">≥ 70%</td>
+      <td class="num">50~70%</td>
+      <td>발화를 보조 입력으로 강등 — 동작만으로 진행 가능하게 하고 발화는 보너스 보상으로. 50% 미만이면 음성 기능을 v2로 이월</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>G2</b><br>W8 말<br>재플레이</td>
+      <td>주 2회+ 자발 재플레이 가정 비율</td>
+      <td class="num">≥ 50%</td>
+      <td class="num">30~50%</td>
+      <td>이탈 가정 인터뷰로 원인 분리(재미 vs 세팅 마찰), 보상 루프·세션 길이 조정 후 2주차 재측정</td>
+    </tr>
+    <tr>
+      <td>팩 완주율 (10~15분 세션)</td>
+      <td class="num">≥ 60%</td>
+      <td class="num">40~60%</td>
+      <td>이탈 장면 특정 → 해당 미션 난도·연출 수정</td>
+    </tr>
+    <tr>
+      <td>"아이가 먼저 하자고 한다"<br>학부모 응답 (인터뷰 10가정)</td>
+      <td class="num">≥ 6가정</td>
+      <td class="num">4~5가정</td>
+      <td>3가정 이하면 유료 오픈을 2주 연기하고 제품 보완 우선 — 전환 실패를 미리 사는 것보다 낫다</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>G3</b><br>W13<br>유료 검증</td>
+      <td>유료 구독자</td>
+      <td class="num">≥ 30명</td>
+      <td class="num">15~29명</td>
+      <td rowspan="2">둘 중 하나면 통과. 조건부(유료 15명+ 그리고 B2B 협상 진행 중)면 4주 연장 후 재판정. 그 미만이면 피벗 진단(04 분기)</td>
+    </tr>
+    <tr>
+      <td>B2B 파일럿 계약</td>
+      <td class="num">≥ 1곳</td>
+      <td class="num">협상 단계 1곳+</td>
+    </tr>
+  </table></div>
+  <p class="src">G1 발화 기준(70%)은 아동 자유발화 오류율 연구(낭독체 대비 7.6배)를 감안한 프롬프트형+관대 매칭 전제의 보수적 초기값 —
+  W2 실측 후 상향 조정 가능. G3 기준은 사업계획서 v1.1의 90일 판정 기준을 그대로 승계.</p>
+</section>
+
+<!-- ================= 06 컨틴전시 ================= -->
+<section>
+  <div class="eyebrow"><span class="num">06</span><span class="label">Contingency</span></div>
+  <h2>컨틴전시 플랜 — 트리거와 사전 결정</h2>
+  <p>위기 때 판단하지 않도록, 트리거가 발생하면 실행할 대응을 미리 적어둔다.</p>
+  <div class="tbl-scroll"><table>
+    <tr><th>트리거 (감지 시점)</th><th>사전 결정된 대응</th></tr>
+    <tr><td><b>베타 모집 20가정 미달</b> (W7 중)</td><td>유료 체험단 플랫폼 활용(소액 예산), 지역 키즈카페·문화센터 현장 시연으로 오프라인 모집 병행. 15가정 밑이면 베타 기간 1주 연장</td></tr>
+    <tr><td><b>세팅 이탈률 30% 초과</b> (W7–8 로그)</td><td>온보딩 전면 재설계 최우선 — 카메라 미리보기에 실루엣 가이드, 세팅 없이 보는 30초 데모 모드 추가</td></tr>
+    <tr><td><b>비상교육 '챌린지' B2C 진출 감지</b> (상시 모니터링, 월 1회 체크)</td><td>정면전 회피 — 가정용 게임 서사·음성 결합·프라이버시 포지셔닝 강화, 테마팩 증산 속도전, B2C 커뮤니티 잠금</td></tr>
+    <tr><td><b>전환율 5% 미만</b> (W11 말, 베타→유료)</td><td>가격이 아니라 오퍼를 먼저 수정(연 결제 할인·형제 계정) → 그래도 미달이면 가격 하향 A/B → B2B 비중 확대 검토</td></tr>
+    <tr><td><b>Web Speech API 브라우저 편차 심각</b> (W1–2)</td><td>지원 브라우저를 Chrome 계열로 한정 명시(온보딩에서 안내). 장기적으로 Whisper 계열 클라이언트 모델(WASM) 검토는 확장 단계로 이월</td></tr>
+    <tr><td><b>크리티컬 패스 2주 이상 지연</b> (매주 회고에서 감지)</td><td>범위를 줄이고 판정일은 지킨다 — 장면 수 축소(10→7), 리포트 v1 간소화 등 스코프 컷 우선순위 목록 적용</td></tr>
+  </table></div>
+</section>
+
+<!-- ================= 07 주간 리듬 ================= -->
+<section>
+  <div class="eyebrow"><span class="num">07</span><span class="label">Operating Rhythm</span></div>
+  <h2>1인 창업자의 주간 운영 리듬</h2>
+  <p>13주 내내 유지하는 기본 틀이다. 요일은 고정하되, 크리티컬 패스가 위험하면 마케팅 제작을 제외한 나머지를 양보한다.</p>
+  <div class="rhythm">
+    <div class="slot"><div class="d">월</div><div class="t">주간 계획</div><div class="s">지표 확인 → 이번 주 크리티컬 패스 태스크 확정 (30분) → 개발 집중</div></div>
+    <div class="slot"><div class="d">화·수</div><div class="t">개발·제작 집중</div><div class="s">가장 어려운 태스크를 오전에. 인스타 발행 1회(화)</div></div>
+    <div class="slot"><div class="d">목</div><div class="t">사용자 접점</div><div class="s">베타 오픈채팅 응대, 인터뷰·테스트 세션, 인스타 발행 2회차</div></div>
+    <div class="slot"><div class="d">금</div><div class="t">제작 마무리 + 발행</div><div class="s">주간 산출물 마감, 인스타 발행 3회차(주말 노출용)</div></div>
+    <div class="slot"><div class="d">토</div><div class="t">주간 회고</div><div class="s">완료 기준 대비 점검 (1시간), 지연 시 스코프 컷 결정, 다음 주 준비</div></div>
+  </div>
+  <div class="rule"><span class="tag">고정비 가드레일</span>
+  월 고정비 20~30만 원(AI 도구·도메인·호스팅) 상한을 유지한다. 유료 체험단 등 추가 지출은 건당 사전 상한을 정하고,
+  손익분기(구독자 약 20명) 도달 전에는 월 지출 총액이 50만 원을 넘지 않는다.</div>
+</section>
+
+<footer>
+  <span>몸으로 배우는 영어 (가칭) · 90일 실행 계획 보고서 v1.0</span>
+  <span>기준: 사업계획서 v1.1 · 1·2차 딥리서치 (2026.7.6)</span>
+</footer>
+
+</div>

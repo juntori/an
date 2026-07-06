@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기술 검증 스파이크 — 손동작 + 발화 인식</title>
+<style>
+  :root{
+    --paper:#F9FAF5; --ink:#22271F; --muted:#68705E;
+    --leaf:#3D7A46; --leaf-soft:#EAF1E6;
+    --apple:#D9482B; --apple-soft:#FBEAE4;
+    --line:#E1E4D6; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:'Pretendard Variable',Pretendard,'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    font-size:15px;line-height:1.6;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 20px 80px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px;padding:8px 0 16px;border-bottom:3px solid var(--ink)}
+  header h1{font-size:20px;font-weight:800;margin:0}
+  header .k{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--leaf);text-transform:uppercase}
+  header .env{margin-left:auto;font-size:12px;color:var(--muted)}
+  header .env b{color:var(--leaf)}
+
+  .cols{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;margin-top:18px}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+
+  /* stage */
+  .stage{position:relative;background:#111;border-radius:12px;overflow:hidden;aspect-ratio:4/3}
+  .stage video{display:none}
+  .stage canvas{width:100%;height:100%;display:block}
+  .stage .big{
+    position:absolute;left:0;right:0;top:10%;text-align:center;pointer-events:none;
+    font-size:clamp(22px,4vw,34px);font-weight:800;color:#fff;
+    text-shadow:0 2px 12px rgba(0,0,0,.55);
+  }
+  .stage .sub{
+    position:absolute;left:0;right:0;bottom:6%;text-align:center;pointer-events:none;
+    font-size:15px;font-weight:600;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.6);
+  }
+  .stage .fps{position:absolute;top:8px;right:10px;font-size:11px;color:#9f9;font-variant-numeric:tabular-nums}
+
+  .modes{display:flex;gap:8px;margin:14px 0 10px;flex-wrap:wrap}
+  .modes button{
+    flex:1;min-width:120px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);
+    background:var(--card);color:var(--ink);font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;
+  }
+  .modes button.on{background:var(--leaf);border-color:var(--leaf);color:#fff}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .actions button{
+    padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;
+    font-weight:800;font-size:14px;background:var(--apple);color:#fff;
+  }
+  .actions button.ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+  .actions button:disabled{opacity:.45;cursor:default}
+
+  /* panel */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .panel h2{font-size:14px;font-weight:800;margin:0 0 10px;letter-spacing:.04em;color:var(--leaf);text-transform:uppercase}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .stat{background:var(--leaf-soft);border-radius:10px;padding:10px 12px}
+  .stat .v{font-size:22px;font-weight:800;color:var(--leaf);font-variant-numeric:tabular-nums;line-height:1.2}
+  .stat .v.red{color:var(--apple)}
+  .stat .k{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  .live{font-size:13px;background:var(--paper);border:1px dashed var(--line);border-radius:8px;padding:8px 12px;margin-bottom:12px;min-height:38px}
+  .live b{color:var(--apple)}
+
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:11px;color:var(--muted);letter-spacing:.04em;white-space:nowrap;background:var(--leaf-soft)}
+  td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .logbox{max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+  .pill{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:1px 9px;cursor:pointer;user-select:none}
+  .pill.ok{background:var(--leaf-soft);color:var(--leaf);border:1px solid var(--leaf)}
+  .pill.no{background:var(--apple-soft);color:var(--apple);border:1px solid var(--apple)}
+
+  details.tune{margin-top:14px;font-size:13px}
+  details.tune summary{cursor:pointer;font-weight:700;color:var(--muted)}
+  .tune .row{display:flex;align-items:center;gap:10px;margin:8px 0}
+  .tune .row label{width:190px;font-size:12.5px;color:var(--muted)}
+  .tune .row input[type=range]{flex:1;accent-color:var(--leaf)}
+  .tune .row .val{width:44px;text-align:right;font-variant-numeric:tabular-nums;font-size:12.5px}
+
+  .note{font-size:12.5px;color:var(--muted);margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+  .note b{color:var(--apple)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="k">Spike · Week 1</span>
+  <h1>손동작 + 발화 인식 검증 데모</h1>
+  <span class="env" id="envInfo">환경 확인 중…</span>
+</header>
+
+<div class="cols">
+  <div>
+    <div class="stage">
+      <video id="video" playsinline></video>
+      <canvas id="canvas" width="960" height="720"></canvas>
+      <div class="big" id="bigMsg">카메라를 시작해 주세요</div>
+      <div class="sub" id="subMsg"></div>
+      <div class="fps" id="fps"></div>
+    </div>
+
+    <div class="modes">
+      <button data-mode="gesture" class="on">① 손동작 테스트</button>
+      <button data-mode="speech">② 발화 테스트</button>
+      <button data-mode="loop">③ 통합 미션 루프</button>
+    </div>
+
+    <div class="actions">
+      <button id="btnStart">카메라 시작</button>
+      <button id="btnTrial" class="ghost" disabled>시도 시작</button>
+      <button id="btnAuto" class="ghost" disabled>연속 10회 자동</button>
+    </div>
+
+    <details class="tune">
+      <summary>인식 파라미터 튜닝</summary>
+      <div class="row"><label>주먹 판정 임계 (openness &lt;)</label><input type="range" id="thClose" min="0.8" max="1.4" step="0.05" value="1.1"><span class="val" id="thCloseV">1.10</span></div>
+      <div class="row"><label>손 펴짐 판정 임계 (openness &gt;)</label><input type="range" id="thOpen" min="1.2" max="1.9" step="0.05" value="1.45"><span class="val" id="thOpenV">1.45</span></div>
+      <div class="row"><label>타겟 판정 반경 (px)</label><input type="range" id="thRadius" min="60" max="200" step="10" value="120"><span class="val" id="thRadiusV">120</span></div>
+      <div class="row"><label>발화 유사도 임계</label><input type="range" id="thSim" min="0.4" max="0.9" step="0.05" value="0.6"><span class="val" id="thSimV">0.60</span></div>
+      <div class="row"><label>시도 제한 시간 (초)</label><input type="range" id="thTimeout" min="5" max="20" step="1" value="10"><span class="val" id="thTimeoutV">10</span></div>
+    </details>
+  </div>
+
+  <div class="panel">
+    <h2>측정 결과</h2>
+    <div class="stats">
+      <div class="stat"><div class="v" id="stGesture">–</div><div class="k">손동작 성공률<br><span id="stGestureN">0/0</span></div></div>
+      <div class="stat"><div class="v" id="stSpeech">–</div><div class="k">발화 성공률<br><span id="stSpeechN">0/0</span></div></div>
+      <div class="stat"><div class="v red" id="stGate">대기</div><div class="k">G1 판정<br>동작≥90% · 발화≥70%</div></div>
+    </div>
+    <div class="live" id="liveBox">시도를 시작하면 실시간 인식 상태가 여기 표시됩니다.</div>
+    <div class="logbox"><table>
+      <thead><tr><th>#</th><th>모드</th><th>목표</th><th>결과</th><th>상세</th></tr></thead>
+      <tbody id="logBody"></tbody>
+    </table></div>
+    <div class="actions" style="margin-top:12px">
+      <button id="btnCopy" class="ghost">측정 시트 복사 (TSV)</button>
+      <button id="btnClear" class="ghost">기록 초기화</button>
+    </div>
+    <div class="note">
+      결과 배지를 클릭하면 성공↔실패를 수동으로 뒤집을 수 있습니다(관찰자 오버라이드).
+      <br><b>주의</b> — Web Speech API는 Chrome에서 음성을 구글 서버로 전송해 인식합니다.
+      "마이크 데이터 미전송" 원칙과 충돌하므로, 스파이크에서는 인식률만 검증하고
+      프로덕션은 온디바이스 대안(브라우저 로컬 인식·WASM 모델)을 별도 평가합니다.
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script type="module">
+import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+/* ---------------- 상태 ---------------- */
+const WORDS = [
+  { en:'apple',      ko:'사과',   accept:['apple','apples','appel','apel'] },
+  { en:'banana',     ko:'바나나', accept:['banana','bananas','banna','nana'] },
+  { en:'grape',      ko:'포도',   accept:['grape','grapes','great','grip'] },
+  { en:'orange',     ko:'오렌지', accept:['orange','oranges','orang'] },
+  { en:'strawberry', ko:'딸기',   accept:['strawberry','strawberries','strawbery','berry'] },
+  { en:'watermelon', ko:'수박',   accept:['watermelon','water melon','melon'] },
+  { en:'peach',      ko:'복숭아', accept:['peach','peaches','pitch','beach'] },
+  { en:'pear',       ko:'배',     accept:['pear','pears','pair','bear'] },
+  { en:'pick',       ko:'따다',   accept:['pick','pic','big','pig'] },
+  { en:'wash',       ko:'씻다',   accept:['wash','watch','wash it','walsh'] },
+];
+const S = {
+  mode:'gesture', running:false, autoLeft:0,
+  cam:false, landmarker:null, lastVideoTime:-1,
+  hand:null, openness:null, grabbedNow:false, wasOpen:false,
+  target:null, trial:null, log:[], trialSeq:0,
+  th:{ close:1.10, open:1.45, radius:120, sim:0.60, timeout:10 },
+};
+
+const $ = id => document.getElementById(id);
+const video=$('video'), canvas=$('canvas'), ctx=canvas.getContext('2d');
+const bigMsg=$('bigMsg'), subMsg=$('subMsg'), liveBox=$('liveBox');
+
+/* ---------------- 환경 체크 ---------------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+$('envInfo').innerHTML =
+  `동작인식 <b>MediaPipe</b> · 음성인식 ${SR ? '<b>지원됨</b>' : '<span style="color:var(--apple)">미지원 브라우저</span>'} · ${location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1' ? '보안 컨텍스트 <b>OK</b>' : '<span style="color:var(--apple)">localhost/HTTPS 필요</span>'}`;
+
+/* ---------------- 튜닝 슬라이더 ---------------- */
+const bindRange = (id, key, fmt=v=>v.toFixed(2)) => {
+  const el=$(id), lab=$(id+'V');
+  el.addEventListener('input',()=>{ S.th[key]=parseFloat(el.value); lab.textContent=fmt(S.th[key]); });
+};
+bindRange('thClose','close'); bindRange('thOpen','open');
+bindRange('thRadius','radius',v=>v.toFixed(0)); bindRange('thSim','sim');
+bindRange('thTimeout','timeout',v=>v.toFixed(0));
+
+/* ---------------- 카메라 + MediaPipe ---------------- */
+$('btnStart').addEventListener('click', startCam);
+async function startCam(){
+  $('btnStart').disabled=true; bigMsg.textContent='모델 로딩 중…';
+  try{
+    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    S.landmarker = await HandLandmarker.createFromOptions(vision,{
+      baseOptions:{ modelAssetPath:"https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task", delegate:"GPU" },
+      runningMode:"VIDEO", numHands:1,
+    });
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{ width:960, height:720 }, audio:false });
+    video.srcObject = stream; await video.play();
+    S.cam=true; bigMsg.textContent='손을 화면에 보여주세요';
+    $('btnTrial').disabled=false; $('btnAuto').disabled=false;
+    requestAnimationFrame(tick);
+  }catch(e){
+    bigMsg.textContent='시작 실패: '+e.message;
+    $('btnStart').disabled=false;
+  }
+}
+
+let frames=0, fpsT=performance.now();
+function tick(){
+  if(!S.cam) return;
+  if(video.currentTime !== S.lastVideoTime){
+    S.lastVideoTime = video.currentTime;
+    const res = S.landmarker.detectForVideo(video, performance.now());
+    processHands(res);
+    draw(res);
+    frames++;
+    const now=performance.now();
+    if(now-fpsT>1000){ $('fps').textContent=frames+' fps'; frames=0; fpsT=now; }
+  }
+  requestAnimationFrame(tick);
+}
+
+const dist=(a,b)=>Math.hypot(a.x-b.x, a.y-b.y);
+function processHands(res){
+  if(!res.landmarks || !res.landmarks.length){ S.hand=null; S.openness=null; return; }
+  const lm = res.landmarks[0];
+  const size = dist(lm[0], lm[9]) || 1e-6;
+  const tips=[8,12,16,20];
+  S.openness = tips.reduce((s,i)=>s+dist(lm[i],lm[0]),0)/tips.length/size;
+  // 손바닥 중심 → 캔버스 좌표 (미러)
+  const cx=(lm[0].x+lm[5].x+lm[9].x+lm[13].x+lm[17].x)/5;
+  const cy=(lm[0].y+lm[5].y+lm[9].y+lm[13].y+lm[17].y)/5;
+  S.hand={ x:(1-cx)*canvas.width, y:cy*canvas.height, lm };
+  // open → close 전이 = grab
+  const closed = S.openness < S.th.close;
+  const open   = S.openness > S.th.open;
+  if(open) S.wasOpen=true;
+  S.grabbedNow = false;
+  if(closed && S.wasOpen){ S.grabbedNow=true; S.wasOpen=false; }
+  if(S.grabbedNow) onGrab();
+}
+
+function draw(res){
+  ctx.save();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // 미러 비디오
+  ctx.translate(canvas.width,0); ctx.scale(-1,1);
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  ctx.restore();
+
+  // 타겟
+  if(S.target){
+    ctx.save();
+    const pulse = 1 + 0.05*Math.sin(performance.now()/250);
+    ctx.font = `${90*pulse}px serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,.4)'; ctx.shadowBlur=16;
+    ctx.fillText('🍎', S.target.x, S.target.y);
+    ctx.restore();
+    ctx.beginPath();
+    ctx.arc(S.target.x,S.target.y,S.th.radius,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.setLineDash([8,8]); ctx.lineWidth=3; ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  // 손 랜드마크 + 커서
+  if(S.hand){
+    ctx.save();
+    ctx.translate(canvas.width,0); ctx.scale(-1,1);
+    for(const p of S.hand.lm){
+      ctx.beginPath(); ctx.arc(p.x*canvas.width,p.y*canvas.height,4,0,Math.PI*2);
+      ctx.fillStyle='rgba(124,220,140,.85)'; ctx.fill();
+    }
+    ctx.restore();
+    const closed = S.openness < S.th.close;
+    ctx.beginPath(); ctx.arc(S.hand.x,S.hand.y, closed?26:36, 0,Math.PI*2);
+    ctx.strokeStyle = closed ? '#D9482B' : '#7CDC8C';
+    ctx.lineWidth=5; ctx.stroke();
+  }
+}
+
+/* ---------------- 시도(트라이얼) 흐름 ---------------- */
+document.querySelectorAll('.modes button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.modes button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); S.mode=b.dataset.mode;
+    cancelTrial('모드 변경');
+  });
+});
+$('btnTrial').addEventListener('click',()=>{ S.autoLeft=0; startTrial(); });
+$('btnAuto').addEventListener('click',()=>{ S.autoLeft=10; startTrial(); });
+
+function randTarget(){
+  const m=140;
+  return { x:m+Math.random()*(canvas.width-2*m), y:m+Math.random()*(canvas.height*0.6) };
+}
+function pickWord(){ return WORDS[Math.floor(Math.random()*WORDS.length)]; }
+
+function startTrial(){
+  if(S.trial) return;
+  const word = pickWord();
+  S.trialSeq++;
+  S.trial = { id:S.trialSeq, mode:S.mode, word, t0:performance.now(), stage:'gesture', done:false };
+  if(S.mode==='speech'){ S.trial.stage='speech'; S.target=null; beginSpeechStage(); }
+  else {
+    S.target = randTarget();
+    bigMsg.textContent = S.mode==='loop' ? `${word.ko}를 잡아보세요!` : '사과를 잡아보세요!';
+    subMsg.textContent = '손을 펴서 사과 위로 → 주먹 쥐기';
+  }
+  S.trial.timer = setTimeout(()=>finishTrial(false,'시간 초과'), S.th.timeout*1000);
+  updateLive();
+}
+function cancelTrial(why){
+  if(!S.trial) return;
+  clearTimeout(S.trial.timer); stopRecog();
+  S.trial=null; S.target=null; S.autoLeft=0;
+  bigMsg.textContent=why||''; subMsg.textContent='';
+}
+
+function onGrab(){
+  const t=S.trial;
+  if(!t || t.stage!=='gesture' || !S.target || !S.hand) return;
+  const d = Math.hypot(S.hand.x-S.target.x, S.hand.y-S.target.y);
+  if(d > S.th.radius) return;
+  const ms = Math.round(performance.now()-t.t0);
+  if(t.mode==='gesture'){ finishTrial(true, ms+'ms'); return; }
+  // loop 모드: 동작 성공 → 발화 단계로
+  logRow({ mode:'손동작', target:'🍎 잡기', ok:true, detail:ms+'ms (루프)' });
+  S.target=null; t.stage='speech'; t.t0=performance.now();
+  clearTimeout(t.timer);
+  t.timer=setTimeout(()=>finishTrial(false,'발화 시간 초과'), S.th.timeout*1000);
+  beginSpeechStage();
+}
+
+/* ---------------- 발화 단계 ---------------- */
+let recog=null;
+function beginSpeechStage(){
+  const t=S.trial; if(!t) return;
+  const w=t.word;
+  bigMsg.textContent=`따라 말해요 — "${w.en.toUpperCase()}!"`;
+  subMsg.textContent=`${w.ko} · 캐릭터가 말한 뒤 마이크가 켜집니다`;
+  // 프롬프트: TTS가 먼저 말한다 (프롬프트형 설계 재현)
+  const u=new SpeechSynthesisUtterance(w.en);
+  u.lang='en-US'; u.rate=0.85;
+  u.onend=()=>startRecog();
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+  // TTS 실패 대비
+  setTimeout(()=>{ if(t===S.trial && !recog) startRecog(); }, 2500);
+}
+function startRecog(){
+  const t=S.trial; if(!t || !SR) { if(t) finishTrial(false,'음성인식 미지원'); return; }
+  recog=new SR();
+  recog.lang='en-US'; recog.interimResults=true; recog.maxAlternatives=5; recog.continuous=false;
+  let heard=[];
+  recog.onresult=e=>{
+    for(const r of e.results){
+      for(let i=0;i<r.length;i++) heard.push(r[i].transcript);
+    }
+    const last=heard[heard.length-1]||'';
+    liveBox.innerHTML=`듣는 중… <b>"${last}"</b>`;
+    const hit=matchWord(t.word, heard);
+    if(hit){ finishTrial(true, `"${hit}"`); }
+  };
+  recog.onerror=e=>{ if(t===S.trial && e.error!=='aborted') liveBox.innerHTML=`인식 오류: <b>${e.error}</b> (재시도 대기)`; };
+  recog.onend=()=>{
+    recog=null;
+    if(t===S.trial && !t.done){
+      // 제한시간 내면 자동 재시작 (아이가 늦게 말하는 경우)
+      if(performance.now()-t.t0 < S.th.timeout*1000-500) startRecog();
+    }
+  };
+  recog.start();
+  subMsg.textContent='🎤 지금 말해요!';
+}
+function stopRecog(){ if(recog){ try{recog.abort();}catch(e){} recog=null; } speechSynthesis.cancel(); }
+
+function norm(s){ return s.toLowerCase().replace(/[^a-z ]/g,'').trim(); }
+function lev(a,b){
+  const m=a.length,n=b.length; if(!m||!n) return Math.max(m,n);
+  const d=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]);
+  for(let j=1;j<=n;j++) d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[m][n];
+}
+function matchWord(word, transcripts){
+  const target=norm(word.en);
+  for(const raw of transcripts){
+    const t=norm(raw); if(!t) continue;
+    if(t.includes(target)) return raw;
+    for(const acc of word.accept) if(t.includes(norm(acc))) return raw;
+    for(const tok of t.split(' ')){
+      const sim = 1 - lev(tok,target)/Math.max(tok.length,target.length);
+      if(sim >= S.th.sim) return raw;
+    }
+  }
+  return null;
+}
+
+/* ---------------- 완료 · 기록 ---------------- */
+function finishTrial(ok, detail){
+  const t=S.trial; if(!t || t.done) return;
+  t.done=true; clearTimeout(t.timer); stopRecog();
+  const modeLabel = t.stage==='speech' ? '발화' : '손동작';
+  const targetLabel = t.stage==='speech' ? t.word.en : '🍎 잡기';
+  logRow({ mode:modeLabel, target:targetLabel, ok, detail });
+  bigMsg.textContent = ok ? '🎉 성공!' : '괜찮아요, 다시 해봐요!';
+  subMsg.textContent='';
+  S.trial=null; S.target=null;
+  if(S.autoLeft>1){ S.autoLeft--; setTimeout(startTrial, 1400); }
+  else S.autoLeft=0;
+}
+
+function logRow(r){
+  r.i=S.log.length+1; r.ts=new Date().toISOString();
+  S.log.push(r); renderLog(); renderStats();
+}
+function renderLog(){
+  const tb=$('logBody');
+  tb.innerHTML = S.log.map((r,idx)=>`
+    <tr>
+      <td class="num">${r.i}</td><td>${r.mode}</td><td>${r.target}</td>
+      <td><span class="pill ${r.ok?'ok':'no'}" data-idx="${idx}">${r.ok?'성공':'실패'}</span></td>
+      <td>${r.detail||''}</td>
+    </tr>`).join('');
+  tb.querySelectorAll('.pill').forEach(p=>p.addEventListener('click',()=>{
+    const r=S.log[+p.dataset.idx]; r.ok=!r.ok; r.detail=(r.detail||'')+' [수동수정]';
+    renderLog(); renderStats();
+  }));
+  tb.parentElement.parentElement.scrollTop = 1e9;
+}
+function pct(a,b){ return b? Math.round(100*a/b)+'%':'–'; }
+function renderStats(){
+  const g=S.log.filter(r=>r.mode==='손동작'), s=S.log.filter(r=>r.mode==='발화');
+  const gOk=g.filter(r=>r.ok).length, sOk=s.filter(r=>r.ok).length;
+  $('stGesture').textContent=pct(gOk,g.length); $('stGestureN').textContent=`${gOk}/${g.length}`;
+  $('stSpeech').textContent=pct(sOk,s.length);  $('stSpeechN').textContent=`${sOk}/${s.length}`;
+  const el=$('stGate');
+  if(g.length>=10 && s.length>=10){
+    const pass = gOk/g.length>=0.9 && sOk/s.length>=0.7;
+    const cond = gOk/g.length>=0.8 && sOk/s.length>=0.5;
+    el.textContent = pass?'통과':cond?'조건부':'미달';
+    el.style.color = pass?'var(--leaf)':cond?'#B8860B':'var(--apple)';
+  } else { el.textContent='표본 부족'; el.style.color='var(--muted)'; }
+}
+function updateLive(){
+  liveBox.innerHTML = S.trial ? `시도 #${S.trialSeq} 진행 중 — <b>${S.trial.word.en}</b> (${S.trial.word.ko})` : '대기';
+}
+
+$('btnCopy').addEventListener('click',async ()=>{
+  const head='no\tmode\ttarget\tresult\tdetail\ttimestamp';
+  const rows=S.log.map(r=>[r.i,r.mode,r.target,r.ok?'success':'fail',(r.detail||'').replace(/\t/g,' '),r.ts].join('\t'));
+  await navigator.clipboard.writeText([head,...rows].join('\n'));
+  $('btnCopy').textContent='복사됨 ✓'; setTimeout(()=>$('btnCopy').textContent='측정 시트 복사 (TSV)',1500);
+});
+$('btnClear').addEventListener('click',()=>{ S.log=[]; S.trialSeq=0; renderLog(); renderStats(); });
+
+renderStats();
+</script>
+</body>
+</html>

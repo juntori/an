@@ -19,8 +19,10 @@
 | [docs/business-plan.html](docs/business-plan.html) | 사업계획서 v1.1 — 시장 분석, 제품 설계, 경쟁 지형, 수익 모델, 90일 론칭 플랜, 리스크 |
 | [docs/market-research.md](docs/market-research.md) | 1차 딥리서치 — 한국 유아·초등 교육 시장 (검증 통과 수치만 수록) |
 | [docs/competitor-research.md](docs/competitor-research.md) | 2차 딥리서치 — 유아 영어 에듀테크 경쟁 지형, 가격 벤치마크, 기술 리스크, B2B 규제 |
+| [docs/execution-plan.html](docs/execution-plan.html) | 90일 실행 계획 보고서 v1.0 — 주차별 태스크·산출물·완료 기준, 관문(G1~G3) 판정 기준, 컨틴전시 플랜, 주간 운영 리듬 |
 
 사업계획서 웹 버전: https://claude.ai/code/artifact/a4462555-7be2-44fd-bccb-9eb1adcaa8be
+실행 계획 웹 버전: https://claude.ai/code/artifact/a1811514-7830-4ba6-938c-5f7ff3692168
 
 ## 진행 상황
 
@@ -30,8 +32,10 @@
 - [x] 사업계획서 v1.0 작성
 - [x] 2차 딥리서치 — 유아 영어 에듀테크 경쟁 지형 (2026-07-06)
 - [x] 사업계획서 v1.1 — 경쟁 분석·가격 벤치마크·B2B 규제 반영
-- [ ] 기술 검증 스파이크 — MediaPipe 손동작 + 아동 발화 인식 데모
-- [ ] MVP 테마팩 1호 "과일 농장"
+- [ ] 기술 검증 스파이크 — MediaPipe 손동작 + 아동 발화 인식 데모 (데모 제작 완료: [spike/index.html](spike/index.html) — `python -m http.server 4173 --directory spike` 후 Chrome에서 http://localhost:4173 · 아동 실측 남음)
+- [x] MVP 테마팩 1호 "과일 농장" — 3가지 시나리오(따기·씻기·바구니 담기) 구현: [mvp/](mvp/) — `python -m http.server 4174 --directory mvp` 후 Chrome에서 http://localhost:4174 (`?debug=1`로 디버그 모드)
+- [x] 몰입 강화 — ① **아이 얼굴에 토끼 코스튬 실시간 합성**(MediaPipe FaceLandmarker, 아이=주인공) ② **무대 위 반응형 캐릭터 Bunny**(따라보기·응원·걱정 표정+홉 애니메이션) ③ **아이 이름 개인화**·행동 반응형 코치 문구. 전부 클라이언트 사이드(영상 미저장·미전송)
+- [ ] MVP 아동 실측 및 베타 준비
 
 ## 90일 로드맵 요약
 

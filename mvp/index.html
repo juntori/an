@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>몸으로 배우는 영어 — 과일 농장 (MVP)</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===== 게임 스테이지 ===== -->
+  <div id="stage">
+    <video id="video" playsinline></video>
+    <canvas id="canvas" width="960" height="720"></canvas>
+
+    <!-- 상단: 진행도 -->
+    <div id="progress" class="hidden"></div>
+
+    <!-- 캐릭터 말풍선 -->
+    <div id="bubble" class="hidden">
+      <span id="bubbleChar">🐰</span>
+      <div>
+        <div id="bubbleEn"></div>
+        <div id="bubbleKo"></div>
+      </div>
+    </div>
+
+    <!-- 중앙 피드백 (성공 연출 등) -->
+    <div id="feedback" class="hidden"></div>
+
+    <!-- 마이크 상태 -->
+    <div id="mic" class="hidden"><span class="dot"></span>말해 보세요!</div>
+
+    <!-- 하단 힌트 -->
+    <div id="hint" class="hidden"></div>
+
+    <!-- 스티커 트레이 -->
+    <div id="stickers" class="hidden"></div>
+
+    <!-- 보호자용 건너뛰기 (지연 시 노출) -->
+    <button id="btnSkip" class="hidden">건너뛰기</button>
+  </div>
+
+  <!-- ===== 오버레이: 타이틀 ===== -->
+  <div id="ovTitle" class="overlay">
+    <div class="ov-card">
+      <div class="ov-emoji">🐰🍎</div>
+      <h1>과일 농장</h1>
+      <p class="ov-sub">몸으로 배우는 영어 — 테마팩 1호</p>
+      <p class="ov-desc">카메라를 켜면 <b>아이가 토끼로 변신</b>해요! 친구 Bunny와 함께<br>
+      과일을 손으로 따고 영어로 말하면 이야기가 이어져요.<br>
+      노트북을 아이 가슴 높이에 두고, 팔을 뻗을 공간을 확보해 주세요.</p>
+      <label class="name-field">
+        <span>아이 이름 <em>(영어 호칭에 사용 · 선택)</em></span>
+        <input id="childName" type="text" maxlength="12" placeholder="예: Mina" autocomplete="off">
+      </label>
+      <button id="btnPlay" class="big-btn">시작하기</button>
+      <p class="ov-fine">카메라 영상은 기기 안에서만 처리되고 저장·전송되지 않아요.<br>
+      말하기 인식은 브라우저의 음성인식 기능을 사용해요 (녹음은 저장하지 않아요).</p>
+    </div>
+  </div>
+
+  <!-- ===== 오버레이: 카메라 세팅 체크 ===== -->
+  <div id="ovSetup" class="overlay hidden">
+    <div class="ov-card">
+      <div class="ov-emoji" id="setupEmoji">✋</div>
+      <h1 id="setupTitle">카메라 준비 중…</h1>
+      <p class="ov-desc" id="setupDesc">잠시만 기다려 주세요.</p>
+      <div id="setupGauge"><div id="setupFill"></div></div>
+    </div>
+  </div>
+
+  <!-- ===== 오버레이: 학부모 리포트 ===== -->
+  <div id="ovReport" class="overlay hidden">
+    <div class="ov-card wide">
+      <h1>학부모 리포트</h1>
+      <p class="ov-sub" id="repSummary"></p>
+      <div class="rep-scroll"><table id="repTable">
+        <thead><tr><th>단어</th><th>뜻</th><th>동작</th><th>말하기</th><th>비고</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <div class="ov-actions">
+        <button id="btnRepCopy" class="ghost-btn">리포트 복사</button>
+        <button id="btnReplay" class="big-btn">다시 놀기</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module" src="engine.js"></script>
+</body>
+</html>
