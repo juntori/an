@@ -16,8 +16,9 @@
 
 | 문서 | 내용 |
 |---|---|
-| [docs/business-plan.html](docs/business-plan.html) | 사업계획서 v1.0 — 시장 분석, 제품 설계, 수익 모델, 90일 론칭 플랜, 리스크 |
+| [docs/business-plan.html](docs/business-plan.html) | 사업계획서 v1.1 — 시장 분석, 제품 설계, 경쟁 지형, 수익 모델, 90일 론칭 플랜, 리스크 |
 | [docs/market-research.md](docs/market-research.md) | 1차 딥리서치 — 한국 유아·초등 교육 시장 (검증 통과 수치만 수록) |
+| [docs/competitor-research.md](docs/competitor-research.md) | 2차 딥리서치 — 유아 영어 에듀테크 경쟁 지형, 가격 벤치마크, 기술 리스크, B2B 규제 |
 
 사업계획서 웹 버전: https://claude.ai/code/artifact/a4462555-7be2-44fd-bccb-9eb1adcaa8be
 
@@ -27,7 +28,8 @@
 - [x] 1차 딥리서치 — 시장·과목 분석 (2026-07-06)
 - [x] 컨셉 확정 — 웹캠 인터랙션 영어 게임 학습, 영어 우선
 - [x] 사업계획서 v1.0 작성
-- [ ] 2차 딥리서치 — 유아 영어 에듀테크 경쟁 지형 (진행 중)
+- [x] 2차 딥리서치 — 유아 영어 에듀테크 경쟁 지형 (2026-07-06)
+- [x] 사업계획서 v1.1 — 경쟁 분석·가격 벤치마크·B2B 규제 반영
 - [ ] 기술 검증 스파이크 — MediaPipe 손동작 + 아동 발화 인식 데모
 - [ ] MVP 테마팩 1호 "과일 농장"
 
