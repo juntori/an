@@ -22,8 +22,8 @@ const S = {
   hand: null,            // {x,y,lm} 캔버스 좌표(미러 반영)
   openness: null,
   wasOpen: false, grabEvent: false,
-  faceLandmarker: null,  // 아이 얼굴 인식 (코스튬 합성용)
-  face: null,            // {cx,cy,w,h,angle} 캔버스 좌표(미러 반영)
+  faceLandmarker: null,  // 아이 얼굴 인식 (시작 시 1회 촬영용)
+  faceRaw: null,         // {cx,cy,w,h} 비디오 원본 정규화 좌표 (얼굴 크롭용)
   faceFrame: 0,          // 얼굴 인식 프레임 스로틀 카운터
   scene: null,           // 현재 시나리오 렌더 정보 {type, items:[...], basket?...}
   particles: [],
@@ -211,8 +211,8 @@ function tick() {
     S.lastVideoTime = video.currentTime;
     const now = performance.now();
     updateHand(S.landmarker.detectForVideo(video, now));
-    // 얼굴은 2프레임에 1번만 (두 GPU 모델 부하 완화) — 사이 프레임은 직전 결과 재사용
-    if (S.faceLandmarker && (S.faceFrame++ & 1) === 0)
+    // 얼굴 인식은 '촬영 전'에만 동작 (촬영 후엔 손 인식만 → 부하↓, 실시간 아님)
+    if (S.faceLandmarker && !S.child.faceImg && (S.faceFrame++ & 1) === 0)
       updateFace(S.faceLandmarker.detectForVideo(video, now));
     updateGestureTask();
     tickBunny(now);
@@ -235,56 +235,48 @@ function updateHand(res) {
   if (S.openness < TH.close && S.wasOpen) { S.grabEvent = true; S.wasOpen = false; }
 }
 
-/* ================= 얼굴 추적 → 아이 코스튬 (A1: 아이 = 주인공) ================= */
+/* ================= 얼굴 촬영 → 주인공 캐릭터에 입히기 (아이 = 주인공) ================= */
+// 시작 시 한 번만 얼굴을 인식해 비디오 원본 좌표의 얼굴 박스를 갱신
 function updateFace(res) {
-  if (!res.faceLandmarks || !res.faceLandmarks.length) { S.face = null; return; }
-  const lm = res.faceLandmarks[0];
-  const fp = i => ({ x: (1 - lm[i].x) * W, y: lm[i].y * H }); // 미러 반영
-  const L = fp(234), R = fp(454), top = fp(10), chin = fp(152); // 볼·이마·턱
+  if (!res.faceLandmarks || !res.faceLandmarks.length) { S.faceRaw = null; return; }
+  const lm = res.faceLandmarks[0]; // 정규화 좌표(비디오 원본, 미러 아님)
+  const L = lm[234], R = lm[454], top = lm[10], chin = lm[152]; // 볼·이마·턱
   const w = Math.hypot(R.x - L.x, R.y - L.y);
   const h = Math.hypot(chin.x - top.x, chin.y - top.y);
-  const angle = Math.atan2(R.y - L.y, R.x - L.x);              // 고개 기울기
-  const next = { cx: (top.x + chin.x) / 2, cy: (top.y + chin.y) / 2, w, h, angle };
-  // 지터 완화 — 직전 프레임과 보간
-  const p = S.face;
-  S.face = p ? {
-    cx: p.cx + (next.cx - p.cx) * .5, cy: p.cy + (next.cy - p.cy) * .5,
-    w: p.w + (next.w - p.w) * .4, h: p.h + (next.h - p.h) * .4,
-    angle: p.angle + (next.angle - p.angle) * .4,
-  } : next;
+  S.faceRaw = { cx: (top.x + chin.x) / 2, cy: (top.y + chin.y) / 2, w, h };
 }
 
-function drawChildCostume() {
-  const f = S.face; if (!f) return;
-  ctx.save();
-  ctx.translate(f.cx, f.cy);
-  ctx.rotate(f.angle);
-  const w = f.w, h = f.h;
-  drawEar(-w * 0.24, -h * 0.72, w * 0.15, h * 0.46, -0.14);   // 왼쪽 귀
-  drawEar(w * 0.24, -h * 0.72, w * 0.15, h * 0.46, 0.14);     // 오른쪽 귀
-  // 분홍 코
-  ctx.fillStyle = '#F28FB0';
-  ctx.beginPath(); ctx.ellipse(0, h * 0.07, w * 0.055, w * 0.04, 0, 0, Math.PI * 2); ctx.fill();
-  // 수염
-  ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-  for (const side of [-1, 1]) for (const dy of [-5, 3, 11]) {
-    ctx.beginPath();
-    ctx.moveTo(side * w * 0.09, h * 0.08 + dy);
-    ctx.lineTo(side * w * 0.36, h * 0.08 + dy * 1.7);
-    ctx.stroke();
-  }
-  // 발그레한 볼
-  ctx.fillStyle = 'rgba(244,140,160,.32)';
-  for (const side of [-1, 1]) { ctx.beginPath(); ctx.ellipse(side * w * 0.23, h * 0.15, w * 0.09, w * 0.06, 0, 0, Math.PI * 2); ctx.fill(); }
-  ctx.restore();
+// 현재 프레임의 얼굴을 잘라 타원 마스크한 오프스크린 캔버스로 저장 (셀피=미러 방향)
+function captureFace() {
+  const r = S.faceRaw; if (!r || !video.videoWidth) return false;
+  const vw = video.videoWidth, vh = video.videoHeight;
+  const padX = r.w * 0.38, padY = r.h * 0.5;
+  let x0 = Math.max(0, (r.cx - r.w / 2 - padX) * vw);
+  let y0 = Math.max(0, (r.cy - r.h / 2 - padY * 1.3) * vh); // 이마·머리 더 포함
+  let x1 = Math.min(vw, (r.cx + r.w / 2 + padX) * vw);
+  let y1 = Math.min(vh, (r.cy + r.h / 2 + padY) * vh);
+  const sw = x1 - x0, sh = y1 - y0;
+  if (sw < 30 || sh < 30) return false;
+  const size = 256;
+  const off = document.createElement('canvas'); off.width = size; off.height = size;
+  const o = off.getContext('2d');
+  o.save(); o.translate(size, 0); o.scale(-1, 1); // 아이가 보던 셀피 방향 유지
+  o.drawImage(video, x0, y0, sw, sh, 0, 0, size, size);
+  o.restore();
+  o.globalCompositeOperation = 'destination-in'; // 타원 밖은 투명 처리
+  o.fillStyle = '#000';
+  o.beginPath(); o.ellipse(size / 2, size * 0.52, size * 0.45, size * 0.48, 0, 0, Math.PI * 2); o.fill();
+  S.child.faceImg = off;
+  return true;
 }
-function drawEar(x, y, ew, eh, tilt) {
-  ctx.save(); ctx.translate(x, y); ctx.rotate(tilt);
-  ctx.fillStyle = '#FDFDFB'; ctx.strokeStyle = 'rgba(90,90,90,.22)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.ellipse(0, 0, ew, eh, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#F7B8CC';
-  ctx.beginPath(); ctx.ellipse(0, eh * 0.06, ew * 0.5, eh * 0.72, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.restore();
+// 얼굴이 잡힐 때까지 잠깐 재시도
+async function captureFaceWithRetry(ms = 2600) {
+  const t0 = performance.now();
+  while (performance.now() - t0 < ms) {
+    if (S.faceRaw && captureFace()) return true;
+    await sleep(120);
+  }
+  return false;
 }
 
 /* ================= 무대 위 Bunny (B1: 살아있는 캐릭터) ================= */
@@ -308,10 +300,10 @@ function drawBunny() {
     const k = Math.sin((1 - (b.hopUntil - now) / 720) * Math.PI); // 0→1→0
     hop = -k * 44; squash = 1 - k * 0.12;
   }
-  const cy = H * 0.82 + bob + hop;
+  const cy = H * 0.80 + bob + hop;
   const blinking = now < b.blinkTil;
   const mood = b.mood;
-  const s = W / 960; // 캔버스 기준 스케일
+  const s = (W / 960) * 1.35; // 캔버스 기준 스케일 (담은 얼굴이 잘 보이도록 크게)
 
   ctx.save();
   ctx.translate(cx, cy);
@@ -340,28 +332,38 @@ function drawBunny() {
   ctx.fillStyle = '#FDFDFB'; ctx.strokeStyle = 'rgba(70,70,70,.14)'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.ellipse(0, 34, 30, 32, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
   ctx.beginPath(); ctx.arc(0, -12, 30, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  // 발그레한 볼
-  ctx.fillStyle = 'rgba(244,140,160,.5)';
-  for (const side of [-1, 1]) { ctx.beginPath(); ctx.arc(side * 18, -4, 6, 0, Math.PI * 2); ctx.fill(); }
-  // 눈
-  ctx.fillStyle = '#2A2A26'; ctx.strokeStyle = '#2A2A26'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-  for (const side of [-1, 1]) {
-    if (blinking || mood === 'cheer') {
-      ctx.beginPath(); // 감은 눈/웃는 눈 ⌣
-      ctx.arc(side * 12, -16, 6, mood === 'cheer' ? Math.PI : 0.15 * Math.PI, mood === 'cheer' ? Math.PI * 2 : 0.85 * Math.PI);
-      ctx.stroke();
-    } else {
-      ctx.beginPath(); ctx.arc(side * 12, -16, mood === 'worry' ? 3 : 4.5, 0, Math.PI * 2); ctx.fill();
+  // 얼굴 — 시작 시 담은 아이 얼굴을 머리에 입힘 (없으면 그린 토끼 표정으로 폴백)
+  if (S.child.faceImg) {
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(0, -13, 27, 30, 0, 0, Math.PI * 2); ctx.clip();
+    ctx.drawImage(S.child.faceImg, -33, -47, 66, 70);
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(70,70,70,.12)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(0, -13, 27, 30, 0, 0, Math.PI * 2); ctx.stroke();
+  } else {
+    // 발그레한 볼
+    ctx.fillStyle = 'rgba(244,140,160,.5)';
+    for (const side of [-1, 1]) { ctx.beginPath(); ctx.arc(side * 18, -4, 6, 0, Math.PI * 2); ctx.fill(); }
+    // 눈
+    ctx.fillStyle = '#2A2A26'; ctx.strokeStyle = '#2A2A26'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    for (const side of [-1, 1]) {
+      if (blinking || mood === 'cheer') {
+        ctx.beginPath(); // 감은 눈/웃는 눈 ⌣
+        ctx.arc(side * 12, -16, 6, mood === 'cheer' ? Math.PI : 0.15 * Math.PI, mood === 'cheer' ? Math.PI * 2 : 0.85 * Math.PI);
+        ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.arc(side * 12, -16, mood === 'worry' ? 3 : 4.5, 0, Math.PI * 2); ctx.fill();
+      }
     }
+    // 코 + 입
+    ctx.fillStyle = '#F28FB0'; ctx.beginPath(); ctx.ellipse(0, -6, 4, 3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#8A6A55'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (mood === 'cheer') { ctx.arc(0, -3, 6, 0.15 * Math.PI, 0.85 * Math.PI); }       // 활짝
+    else if (mood === 'worry') { ctx.arc(0, 4, 4, 1.15 * Math.PI, 1.85 * Math.PI); }   // ㅜ
+    else { ctx.moveTo(-4, 0); ctx.lineTo(0, 2); ctx.lineTo(4, 0); }
+    ctx.stroke();
   }
-  // 코 + 입
-  ctx.fillStyle = '#F28FB0'; ctx.beginPath(); ctx.ellipse(0, -6, 4, 3, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = '#8A6A55'; ctx.lineWidth = 2;
-  ctx.beginPath();
-  if (mood === 'cheer') { ctx.arc(0, -3, 6, 0.15 * Math.PI, 0.85 * Math.PI); }       // 활짝
-  else if (mood === 'worry') { ctx.arc(0, 4, 4, 1.15 * Math.PI, 1.85 * Math.PI); }   // ㅜ
-  else { ctx.moveTo(-4, 0); ctx.lineTo(0, 2); ctx.lineTo(4, 0); }
-  ctx.stroke();
   // 걱정 땀방울
   if (mood === 'worry') {
     ctx.fillStyle = 'rgba(120,190,235,.9)';
@@ -518,8 +520,6 @@ function draw() {
   ctx.translate(W, 0); ctx.scale(-1, 1);
   ctx.drawImage(video, 0, 0, W, H);
   ctx.restore();
-
-  drawChildCostume(); // 아이 얼굴에 토끼 코스튬 합성
 
   const sc = S.scene;
   if (sc) {
@@ -730,6 +730,13 @@ $('btnPlay').addEventListener('click', async () => {
   $('setupTitle').textContent = '손을 흔들어 보세요!';
   $('setupDesc').textContent = '카메라에 손이 보이면 게이지가 차올라요. 팔을 뻗을 공간을 확보해 주세요.';
   await waitGesture('handcheck', null, null);
+  // 얼굴 담기 — 이 순간의 얼굴을 이야기 속 주인공 캐릭터에 입힌다 (1회 촬영)
+  $('setupEmoji').textContent = '📸';
+  $('setupTitle').textContent = '얼굴을 담을게요!';
+  $('setupDesc').textContent = '카메라를 잠깐 바라봐 주세요. 이 얼굴이 이야기 속 주인공이 돼요.';
+  $('setupFill').style.width = '100%';
+  await sleep(600);
+  await captureFaceWithRetry();
   hide('ovSetup');
   bunnyCheer();
   await feedback(nm() ? `👋 Hi, ${nm()}!` : '👋 Hello!', 1000);
